@@ -32,32 +32,27 @@ if (!ai4seo_robhub_api() instanceof Ai4Seo_RobHubApiCommunicator) {
 // === READ OLD AUTH DATA ==================================================================== \\
 // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ \\
 
-$ai4seo_robhub_auth_data = get_option(AI4SEO_ROBHUB_AUTH_DATA_OPTION_NAME);
+$ai4seo_robhub_auth_data = ai4seo_robhub_api()->read_auth_data();
 
 if (!$ai4seo_robhub_auth_data) {
     ai4seo_return_error_as_json("Could not read old licence key.", 411222324);
 }
 
-$ai4seo_robhub_auth_data = json_decode($ai4seo_robhub_auth_data);
-
 if (!is_array($ai4seo_robhub_auth_data) || count($ai4seo_robhub_auth_data) !== 2) {
     ai4seo_return_error_as_json("Could not read old licence key.", 421222324);
 }
 
-$ai4seo_robhub_auth_data = array_map("sanitize_key", $ai4seo_robhub_auth_data);
+$ai4seo_robhub_auth_data = ai4seo_deep_sanitize($ai4seo_robhub_auth_data);
 
 $ai4seo_robhub_client_id = $ai4seo_robhub_auth_data[0];
 $ai4seo_old_robhub_licence_key = $ai4seo_robhub_auth_data[1];
 
 
 // ___________________________________________________________________________________________ \\
-// === UPDATE DATABASE ======================================================================= \\
+// === UPDATE AUTH DATA IN DATABASE ========================================================== \\
 // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ \\
 
-$ai4seo_encoded_new_auth_data = wp_json_encode(array($ai4seo_robhub_client_id, $ai4seo_new_robhub_licence_key));
-update_option(AI4SEO_ROBHUB_AUTH_DATA_OPTION_NAME, $ai4seo_encoded_new_auth_data);
-
-$ai4seo_save_credentials_success = ai4seo_robhub_api()->save_credentials($ai4seo_robhub_client_id, $ai4seo_new_robhub_licence_key);
+$ai4seo_save_credentials_success = ai4seo_robhub_api()->use_this_credentials($ai4seo_robhub_client_id, $ai4seo_new_robhub_licence_key, true);
 
 if (!$ai4seo_save_credentials_success) {
     ai4seo_return_error_as_json("Could not save new licence key.", 381222324);
@@ -72,8 +67,11 @@ $ai4seo_robhub_api_response = ai4seo_robhub_api()->call("client/credits-balance"
 
 if (!isset($ai4seo_robhub_api_response["success"]) || $ai4seo_robhub_api_response["success"] !== true) {
     // restore old licence key
-    $ai4seo_encoded_old_auth_data = wp_json_encode(array($ai4seo_robhub_client_id, $ai4seo_old_robhub_licence_key));
-    update_option(AI4SEO_ROBHUB_AUTH_DATA_OPTION_NAME, $ai4seo_encoded_old_auth_data);
+    $ai4seo_save_credentials_success = ai4seo_robhub_api()->use_this_credentials($ai4seo_robhub_client_id, $ai4seo_old_robhub_licence_key, true);
+
+    if (!$ai4seo_save_credentials_success) {
+        ai4seo_return_error_as_json("Could not save new licence key.", 616181024);
+    }
 
     ai4seo_return_error_as_json("Could not verify new licence key.", 391222324);
 }

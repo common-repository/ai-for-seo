@@ -223,7 +223,7 @@ echo "</div></a>";
 // Contact
 #echo "<a href='#ai4seo-contact-section'><div class='ai4seo-help-preview-selection'  onclick='jQuery(\".ai4seo-help-content\").hide();jQuery(\"#ai4seo-help-contact\").show();'>";
 # V1.2.1: workaround: send user to robhubs contact form for now
-echo "<a href='" . esc_attr(AI4SEO_OFFICIAL_WEBPAGE) . "/contact' target='_blank'><div class='ai4seo-help-preview-selection'>";
+echo "<a href='" . esc_attr(AI4SEO_OFFICIAL_WEBSITE) . "/contact' target='_blank'><div class='ai4seo-help-preview-selection'>";
     echo "<i class='dashicons dashicons-email'></i>";
     echo "<span>" . esc_html__("Contact", "ai-for-seo") . "</span>";
 echo "</div></a>";
@@ -312,17 +312,17 @@ echo "<div class='ai4seo-display-none ai4seo-help-content' id='ai4seo-help-getti
     echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("How to add alt-text, captions, titles and descriptions for media files", "ai-for-seo"), $ai4seo_this_accordion_content));
 
 
-    // === Automate filling of missing metadata ======================================================== \\
+    // === Bulk generate metadata ======================================================== \\
 
     // First step: Select the Relevant Section
-    $ai4seo_this_accordion_content = "<p><b>1.</b> " . esc_html__("Click on either the \"Pages\", \"Posts\", \"Products\" or \"Media\" tab within the \"AI for SEO\" plugin, depending on where you want to apply the SEO automation. This selection allows you to narrow down the automation to specific parts of your site.", "ai-for-seo") . "</p>";
+    $ai4seo_this_accordion_content = "<p><b>1.</b> " . esc_html__("Click on either the \"Pages\", \"Posts\", \"Products\" or \"Media\" tab within the \"AI for SEO\" plugin, depending on where you want to activate bulk generation. This selection allows you to narrow down the automation to specific parts of your site.", "ai-for-seo") . "</p>";
     $ai4seo_this_accordion_content .= "<img src='" . esc_url(ai4seo_get_assets_images_url("faq-screenshots/screenshot-automate-1.jpg")) . "' style='width: 100%;' />";
 
     // Second step: Activate the Automation Feature
-    $ai4seo_this_accordion_content .= "<p><b>2.</b> " . esc_html__("Click on the option \"Fill missing metadata automatically (also when creating new pages).\" This will enable a feature that intelligently fills in missing SEO metadata, both for existing content and new pages/posts/products/media as they're created.", "ai-for-seo") . "</p>";
+    $ai4seo_this_accordion_content .= "<p><b>2.</b> " . esc_html__("Click on the option \"Activate bulk generation\". This will enable bulk generation, both for existing content and new pages/posts/products/media as they're created.", "ai-for-seo") . "</p>";
     $ai4seo_this_accordion_content .= "<img src='" . esc_url(ai4seo_get_assets_images_url("faq-screenshots/screenshot-automate-2.jpg")) . "' style='width: 100%;' />";
 
-    echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("How to fill missing metadata automatically", "ai-for-seo"), $ai4seo_this_accordion_content));
+    echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("How to activate bulk generation", "ai-for-seo"), $ai4seo_this_accordion_content));
 
 
     // === Credits ======================================================================== \\
@@ -448,7 +448,7 @@ echo "<div class='ai4seo-display-none ai4seo-help-content' id='ai4seo-help-faq'>
         $ai4seo_this_accordion_content = __("Including image metadata helps search engines better interpret your images, potentially boosting your rankings in image search results and the overall quality of your website. In addition, it also shows your commitment to accessibility, catering to a wider audience and complying with accessibility standards.", "ai-for-seo");
         echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("What are the benefits of providing alt text, titles, captions, and descriptions for images on my website?", "ai-for-seo"), $ai4seo_this_accordion_content));
 
-        $ai4seo_this_accordion_content = __("Currently, Google's stance on the use of AI or automation in content creation is generally permissive, as indicated in a Google Developers blog post from February 2023. They state that appropriate use of AI or automation is not against their guidelines. More information can be found at <a target='_blank' href='https://developers.google.com/search/blog/2023/02/google-search-and-ai-content'>https://developers.google.com/search/blog/2023/02/google-search-and-ai-content.</a>", "ai-for-seo");
+        $ai4seo_this_accordion_content = __("Currently, Google's stance on the use of AI or automation in content creation is generally permissive, as indicated in a Google Developers blog post from February 2023. They state that appropriate use of AI or automation is not against their guidelines. More information can be found at ", "ai-for-seo") . "<a target='_blank' href='https://developers.google.com/search/blog/2023/02/google-search-and-ai-content'>https://developers.google.com/search/blog/2023/02/google-search-and-ai-content.</a>";
         echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("Is AI-generated SEO-content harmful to my SEO-ranking?", "ai-for-seo"), $ai4seo_this_accordion_content));
 
         $ai4seo_this_accordion_content = __("No, the plugin is only active in the backend of your website. The plugin does not affect the frontend of your website.", "ai-for-seo");
@@ -482,23 +482,23 @@ echo "<div class='ai4seo-display-none ai4seo-help-content' id='ai4seo-help-faq'>
         // Headline
         echo "<h3>" . esc_html__("Automation", "ai-for-seo") . "</h3>";
 
-        $ai4seo_this_accordion_content = __("You can automate the generation of missing SEO data by clicking on any content tab ('Pages,' 'Posts,' 'Products,' etc.) within the 'AI for SEO' plugin and then activating the 'Fill missing metadata automatically' option.", "ai-for-seo");
-        echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("How can I automate the process of filling in missing SEO data for my website?", "ai-for-seo"), $ai4seo_this_accordion_content));
+        $ai4seo_this_accordion_content = __("You can automate the generation of metadata by clicking on any content tab ('Pages,' 'Posts,' 'Products,' etc.) within the 'AI for SEO' plugin and then activating the 'Activate bulk generation' option.", "ai-for-seo");
+        echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("How can I automate the process of generating metadata for my website?", "ai-for-seo"), $ai4seo_this_accordion_content));
 
-        $ai4seo_this_accordion_content = __("You can automate missing image metadata by clicking on the 'Media' tab within the 'AI for SEO' plugin and then activating the 'Fill missing media attributes automatically' option.", "ai-for-seo");
-        echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("How can I automate the process of filling in missing alt text, titles, captions, and descriptions for images on my website?", "ai-for-seo"), $ai4seo_this_accordion_content));
+        $ai4seo_this_accordion_content = __("You can automate the generation of media attributes by clicking on the 'Media' tab within the 'AI for SEO' plugin and then activating the 'Activate bulk generation' option.", "ai-for-seo");
+        echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("How can I automate the process of generating alt text, titles, captions, and descriptions for images on my website?", "ai-for-seo"), $ai4seo_this_accordion_content));
 
-        $ai4seo_this_accordion_content = __("Yes, just deactivate the 'Fill missing metadata automatically' option to stop generating new SEO metadata automatically. The same applies to the 'Fill missing media attributes automatically' option for image metadata.", "ai-for-seo");
+        $ai4seo_this_accordion_content = __("Yes, just deactivate the 'Activate bulk generation' option to stop generating new metadata automatically. The same applies to the 'Activate bulk generation' option for media attributes.", "ai-for-seo");
         echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("Can I turn off the automation feature after I've activated it?", "ai-for-seo"), $ai4seo_this_accordion_content));
 
-        $ai4seo_this_accordion_content = __("Yes, the 'Fill missing metadata automatically' option will intelligently fill in missing SEO metadata, both for existing content and new entries as they're created.", "ai-for-seo");
-        echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("Does this automation feature work for new content?", "ai-for-seo"), $ai4seo_this_accordion_content));
+        $ai4seo_this_accordion_content = __("Yes, the 'Activate bulk generation' option will generate data, both for existing content and new entries as they're created.", "ai-for-seo");
+        echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("Does the bulk generation feature work for new content?", "ai-for-seo"), $ai4seo_this_accordion_content));
 
-        $ai4seo_this_accordion_content = __("The automation feature does not affect metadata that is already been edited or created by the user, so it does not overwrite existing data.", "ai-for-seo");
-        echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("Will this automation affect the SEO data that I have already manually edited?", "ai-for-seo"), $ai4seo_this_accordion_content));
+        $ai4seo_this_accordion_content = __("Not by default. However, you can enable this option in the settings if needed.", "ai-for-seo");
+        echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("Will the bulk generation feature affect existing data?", "ai-for-seo"), $ai4seo_this_accordion_content));
 
-        $ai4seo_this_accordion_content = __("In the settings, we provide an option to include or exclude specific meta tags from the output in the header by our plugin. This allows you to customize the automation process to suit your needs.", "ai-for-seo");
-        echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("Is there any way to control what metadata is automatically filled?", "ai-for-seo"), $ai4seo_this_accordion_content));
+        $ai4seo_this_accordion_content = __("Yes, in the settings, you can choose to include or exclude specific meta tags from the header output generated by our plugin. This gives you full control to customize the meta tags based on your specific requirements.", "ai-for-seo");
+        echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("Is there any way to control what meta tags are outputted?", "ai-for-seo"), $ai4seo_this_accordion_content));
 
         $ai4seo_this_accordion_content = __("You can find the 'Retry all failed' button in any content tab. This allows you to retry all failed metadata generations with a single click, saving you time and effort.", "ai-for-seo");
         echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("How can I retry all failed metadata generations with just one click?", "ai-for-seo"), $ai4seo_this_accordion_content));
@@ -615,12 +615,15 @@ echo "<div class='ai4seo-display-none ai4seo-help-content' id='ai4seo-help-faq'>
             "- " . __("The premium plan is ideal for businesses that require substantial SEO support and features. It covers up to ~%u posts/pages/products/images/etc. per month.", "ai-for-seo") . "<br />",
             esc_html(ai4seo_get_num_credits_amount_based_generations($ai4seo_l_plan_credits)),
         );
-        $ai4seo_this_accordion_content .= "- " . __("If you have a shop with many products or a large blog, please contact us to discuss a custom plan tailored to your needs at " . esc_html(AI4SEO_SUPPORT_EMAIL) . ". We are currently offering a 30% discount on all custom plans!", "ai-for-seo");
+        $ai4seo_this_accordion_content .= sprintf(
+            "- " . __("If you have a shop with many products or a large blog, please contact us to discuss a custom plan tailored to your needs at %s. We are currently offering a 30%% discount on all custom plans!", "ai-for-seo"),
+            esc_html(AI4SEO_SUPPORT_EMAIL),
+        );
         echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("How do I choose the right plan for my needs?", "ai-for-seo"), $ai4seo_this_accordion_content));
 
         $ai4seo_this_accordion_content = sprintf(
             __("You can change or cancel your subscription at any time by going to the 'AI for SEO' dashboard page and clicking on the 'Manage Plan' button, or by following this link: %s.", "ai-for-seo") . "<br />",
-            "<a target='_blank' href='" . esc_html(AI4SEO_OFFICIAL_WEBPAGE) . "/cancel-plan'>" . esc_html(AI4SEO_OFFICIAL_WEBPAGE) . "/cancel-plan</a>",
+            "<a target='_blank' href='" . esc_html(AI4SEO_OFFICIAL_WEBSITE) . "/cancel-plan'>" . esc_html(AI4SEO_OFFICIAL_WEBSITE) . "/cancel-plan</a>",
         );
         $ai4seo_this_accordion_content .= __("You'll be redirected to Stripe, our invoice partner. Please follow the instructions on the Stripe website to change or cancel your subscription.", "ai-for-seo");
         echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("How do I change or cancel my subscription?", "ai-for-seo"), $ai4seo_this_accordion_content));
@@ -632,8 +635,8 @@ echo "<div class='ai4seo-display-none ai4seo-help-content' id='ai4seo-help-faq'>
         $ai4seo_this_accordion_content .= __("You'll be redirected to Stripe, our invoice partner. Please follow the instructions on the Stripe website to change your plan.", "ai-for-seo");
         echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("Can I upgrade or downgrade my plan?", "ai-for-seo"), $ai4seo_this_accordion_content));
 
-        $ai4seo_this_accordion_content = __("No, you can carry over any unused credits to the next month, allowing you to make the most of your credits beyond the current month.", "ai-for-seo");
-        echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("Do leftover credits expire after a month?", "ai-for-seo"), $ai4seo_this_accordion_content));
+        $ai4seo_this_accordion_content = __("No, any unused credits will roll over to the next month, allowing you to fully utilize your credits without losing them at the end of each billing cycle.", "ai-for-seo");
+        echo ai4seo_wp_kses(ai4seo_get_accordion_element("> " . esc_html__("Do unused credits expire at the end of the month?", "ai-for-seo"), $ai4seo_this_accordion_content));
     echo "</div>";
 echo "</div>";
 
@@ -697,7 +700,7 @@ echo "<div class='ai4seo-display-none ai4seo-help-content' id='ai4seo-help-conta
         echo "</div>";
 
         // Submit button
-        submit_button(esc_attr__("Send us an email"), "primary", "ai4seo-contact-form-submit");
+        submit_button(esc_attr__("Send us an email", "ai-for-seo"), "primary", "ai4seo-contact-form-submit");
     echo "</form>";
 echo "</div>";
 
@@ -713,28 +716,28 @@ echo "<div class='ai4seo-display-none ai4seo-help-content' id='ai4seo-help-links
     // Plugin website
     echo "<p>";
         echo "<i class='dashicons dashicons-admin-links'></i> ";
-        echo "<b>" . esc_html__("Plugin's website", "ai-for-seo") . "</b><br />";
-        echo "<a href='" . esc_attr(AI4SEO_OFFICIAL_WEBPAGE) . "' target='_blank'>" . esc_html__("Check out our website to learn more about our plugin!", "ai-for-seo") . "</a>";
+        echo "<b>" . esc_html__("Official plugin website", "ai-for-seo") . "</b><br />";
+        echo "<a href='" . esc_attr(AI4SEO_OFFICIAL_WEBSITE) . "' target='_blank'>" . esc_html__("Check out the official plugin website to learn more about this plugin.", "ai-for-seo") . "</a>";
     echo "</p>";
 
     // WordPress plugin-page
     echo "<p>";
         echo "<i class='dashicons dashicons-admin-links'></i> ";
         echo "<b>" . esc_html__("WordPress plugin-page", "ai-for-seo") . "</b><br />";
-        echo "<a href='https://wordpress.org/plugins/ai-for-seo/' target='_blank'>" . esc_html__("Check out our plugin directly on WordPress!", "ai-for-seo") . "</a>";
+        echo "<a href='https://wordpress.org/plugins/ai-for-seo/' target='_blank'>" . esc_html__("Check out this plugin directly on WordPress.org!", "ai-for-seo") . "</a>";
     echo "</p>";
 
     // WordPress.org Support forum
     echo "<p>";
         echo "<i class='dashicons dashicons-admin-links'></i> ";
-        echo "<b>" . esc_html__("Plugin support-forum", "ai-for-seo") . "</b><br />";
-        echo "<a href='https://wordpress.org/support/plugin/ai-for-seo/' target='_blank'>" . esc_html__("Do you need assistance? Check out our support-forum!", "ai-for-seo") . "</a>";
+        echo "<b>" . esc_html__("Support-Forum", "ai-for-seo") . "</b><br />";
+        echo "<a href='https://wordpress.org/support/plugin/ai-for-seo/' target='_blank'>" . esc_html__("Do you need assistance? Check out the official support-forum on WordPress.org!", "ai-for-seo") . "</a>";
     echo "</p>";
 
     // Space Codes website
     echo "<p>";
         echo "<i class='dashicons dashicons-admin-links'></i> ";
-        echo "<b>" . esc_html__("The makers of AI for SEO", "ai-for-seo") . "</b><br />";
+        echo "<b>" . esc_html__("The makers of 'AI for SEO'", "ai-for-seo") . "</b><br />";
         echo "<a href='https://spa.ce.codes' target='_blank'>" . esc_html__("Do you want to learn more about the makers of \"AI for SEO\"? Then this is the right place for you!", "ai-for-seo") . "</a>";
     echo "</p>";
 echo "</div>";

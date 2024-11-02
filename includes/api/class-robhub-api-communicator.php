@@ -20,10 +20,19 @@ class Ai4Seo_RobHubApiCommunicator {
     private $default_product = "ai4seo";
     private $min_credits_balance = 5; # todo: will be replaced by the users settings based on the quality of the ai generations
     private $credits_balance_cache_lifetime = 86400; // 24 hours
+    private bool $does_user_need_to_accept_tos_toc_and_pp = false;
 
-    private $auth_data_option_name = "robhub_auth_data";
-    private $credits_balance_option_name = "_robhub_credits_balance";
-    private $last_credits_balance_check_option_name = "_robhub_last_credit_balance_check";
+    public const ENVIRONMENTAL_VARIABLE_AUTH_DATA = "auth_data";
+    public const ENVIRONMENTAL_VARIABLE_CREDITS_BALANCE = "credits_balance";
+    public const ENVIRONMENTAL_VARIABLE_LAST_CREDIT_BALANCE_CHECK = "last_credit_balance_check";
+
+    private string $environmental_variables_option_name = "robhub_environmental_variables";
+    private const DEFAULT_ENVIRONMENTAL_VARIABLES = array(
+        self::ENVIRONMENTAL_VARIABLE_AUTH_DATA => array(),
+        self::ENVIRONMENTAL_VARIABLE_CREDITS_BALANCE => 0,
+        self::ENVIRONMENTAL_VARIABLE_LAST_CREDIT_BALANCE_CHECK => 0,
+    );
+    private array $environmental_variables = self::DEFAULT_ENVIRONMENTAL_VARIABLES;
 
     private array $allowed_endpoints = array(
         "ai4seo/generate-all-metadata",
@@ -31,13 +40,15 @@ class Ai4Seo_RobHubApiCommunicator {
 
         "client/get-free-account",
         "client/credits-balance",
-        "client/subscription"
+        "client/subscription",
+        "client/accept-terms"
     );
 
-    private $free_endpoints = array(
+    private array $free_endpoints = array(
         "client/get-free-account",
         "client/credits-balance",
-        "client/subscription"
+        "client/subscription",
+        "client/accept-terms"
     );
 
     function __construct() {
@@ -54,6 +65,10 @@ class Ai4Seo_RobHubApiCommunicator {
      * @return array|mixed|string The response from the API.
      */
     function call(string $endpoint, array $parameters = array(), string $request_method = "GET") {
+        if ($this->does_user_need_to_accept_tos_toc_and_pp) {
+            return $this->respond_error("Terms of Service have to be accepted first.", 2411301024);
+        }
+
         # only for testing via localhost -> if I'm localhost, then set url to localhost
         if ($this->support_localhost_mode && $_SERVER["SERVER_NAME"] === "localhost") {
             $this->url = "http://localhost:8081";
@@ -156,8 +171,20 @@ class Ai4Seo_RobHubApiCommunicator {
 
         // sanitize the response
         if (is_array($decoded_response)) {
-            array_walk_recursive($decoded_response, 'Ai4Seo_RobHubApiCommunicator::sanitize_array');
+            $decoded_response = $this->deep_sanitize($decoded_response);
         } else {
+            // check if response is html
+            if (strpos($response, "<html") !== false || strpos($response, "html>") !== false) {
+                // if it contains "One moment, please", then the request was blocked by cloudflare
+                if (strpos($response, "One moment, please") !== false) {
+                    return $this->respond_error("Failed to connect to our servers. It’s possible that your request was blocked by our server provider's security system, which may occur if your IP address has been flagged as suspicious. Please try again later. If this error persists, please contact our support team.", 4314181024);
+                } else if (strpos($response, "<title>Maintenance</title>") !== false) {
+                    return $this->respond_error("Our servers are currently undergoing maintenance. Please try again later.", 401211124);
+                } else {
+                    return $this->respond_error("There was an error receiving a proper response from our server. Please try again later.", 4414181024);
+                }
+            }
+
             return $this->respond_error("API request failed with unknown error: " . print_r($response, true), 231313823);
         }
 
@@ -171,8 +198,7 @@ class Ai4Seo_RobHubApiCommunicator {
 
         // update new credits balance
         if (isset($decoded_response["new-credits-balance"]) && is_numeric($decoded_response["new-credits-balance"])) {
-            // update $this->credits_balance_option_name option
-            update_option($this->credits_balance_option_name, $decoded_response["new-credits-balance"]);
+            $this->update_environmental_variable(self::ENVIRONMENTAL_VARIABLE_CREDITS_BALANCE, $decoded_response["new-credits-balance"]);
         }
 
         return $this->respond_success($decoded_response);
@@ -180,10 +206,8 @@ class Ai4Seo_RobHubApiCommunicator {
 
     // =========================================================================================== \\
 
-    function set_option_names(string $auth_data_option_name, string $credits_balance_option_name, string $last_credits_balance_check_option_name): void {
-        $this->auth_data_option_name = $auth_data_option_name;
-        $this->credits_balance_option_name = $credits_balance_option_name;
-        $this->last_credits_balance_check_option_name = $last_credits_balance_check_option_name;
+    function set_does_user_need_to_accept_tos_toc_and_pp(bool $does_user_need_to_accept_tos_toc_and_pp): void {
+        $this->does_user_need_to_accept_tos_toc_and_pp = $does_user_need_to_accept_tos_toc_and_pp;
     }
 
     // =========================================================================================== \\
@@ -197,7 +221,7 @@ class Ai4Seo_RobHubApiCommunicator {
     function init_credentials($client_id = false, $client_secret = false): bool {
         // use given auth data
         if ($client_id !== false && $client_secret !== false) {
-            return $this->save_credentials($client_id, $client_secret);
+            return $this->use_this_credentials($client_id, $client_secret);
         }
 
         // credentials already saved previously? -> skip
@@ -206,19 +230,18 @@ class Ai4Seo_RobHubApiCommunicator {
         }
 
         // read robhub auth data from json data in wp_options
-        $robhub_auth_data = get_option($this->auth_data_option_name);
+        $auth_data = $this->read_auth_data();
 
         // we do not have any auth data? ask for free account
-        if ($robhub_auth_data === false) {
+        if (empty($auth_data)) {
             return $this->init_free_account();
         }
 
         // otherwise, try to use the saved credentials
-        $robhub_auth_data = sanitize_text_field($robhub_auth_data);
-        $robhub_auth_data = json_decode($robhub_auth_data, false);
+        $auth_data = $this->deep_sanitize($auth_data);
 
-        if (isset($robhub_auth_data[0]) && isset($robhub_auth_data[1])) {
-            return $this->save_credentials($robhub_auth_data[0], $robhub_auth_data[1]);
+        if (isset($auth_data[0]) && isset($auth_data[1])) {
+            return $this->use_this_credentials($auth_data[0], $auth_data[1]);
         }
 
         return false;
@@ -235,7 +258,7 @@ class Ai4Seo_RobHubApiCommunicator {
         $free_client_id = $this->build_client_id();
         $free_client_secret = $this->free_account_client_secret;
 
-        if (!$this->save_credentials($free_client_id, $free_client_secret)) {
+        if (!$this->use_this_credentials($free_client_id, $free_client_secret)) {
             return false;
         }
 
@@ -244,18 +267,15 @@ class Ai4Seo_RobHubApiCommunicator {
 
         // check response
         if (!isset($response["success"]) || !$response["success"] || !isset($response["data"]["client_id"]) || !isset($response["data"]["client_secret"])) {
+            $this->client_id = "";
+            $this->client_secret = "";
             return false;
         }
 
         // try save new credentials
-        if (!$this->save_credentials($response["data"]["client_id"], $response["data"]["client_secret"])) {
-            return false;
-        }
-
-        // save to wp_options
-        $success = update_option($this->auth_data_option_name, wp_json_encode(array($this->client_id, $this->client_secret)));
-
-        if (!$success) {
+        if (!$this->use_this_credentials($response["data"]["client_id"], $response["data"]["client_secret"], true)) {
+            $this->client_id = "";
+            $this->client_secret = "";
             return false;
         }
 
@@ -279,9 +299,10 @@ class Ai4Seo_RobHubApiCommunicator {
      * Saves the given credentials to the corresponding variables.
      * @param $client_id string The client id to save.
      * @param $client_secret string The client secret to save.
+     * @param $update_in_database bool If true, the credentials will be saved in the database.
      * @return bool True if credentials are valid and saved, false otherwise.
      */
-    function save_credentials(string $client_id, string $client_secret): bool {
+    function use_this_credentials(string $client_id, string $client_secret, bool $update_in_database = false): bool {
         $client_id = sanitize_key($client_id);
         $client_secret = sanitize_key($client_secret);
 
@@ -298,7 +319,38 @@ class Ai4Seo_RobHubApiCommunicator {
         $this->client_id = $client_id;
         $this->client_secret = $client_secret;
 
+        if ($update_in_database) {
+            return $this->update_auth_data($client_id, $client_secret);
+        }
+
         return true;
+    }
+
+    // =========================================================================================== \\
+
+    /**
+     * Function to read the auth data from the environmental variables.
+     * @return array The auth data.
+     */
+    function read_auth_data(): array {
+        $auth_data = $this->read_environmental_variable(self::ENVIRONMENTAL_VARIABLE_AUTH_DATA);
+
+        if (!is_array($auth_data) || count($auth_data) !== 2) {
+            return array();
+        }
+
+        return $auth_data;
+    }
+
+    // =========================================================================================== \\
+
+    /**
+     * Function to update the auth data in the environmental variables
+     * @param string $client_id The client id to save.
+     * @param string $client_secret The client secret to save.
+     */
+    function update_auth_data(string $client_id, string $client_secret): bool {
+        return $this->update_environmental_variable(self::ENVIRONMENTAL_VARIABLE_AUTH_DATA, array($client_id, $client_secret));
     }
 
     // =========================================================================================== \\
@@ -369,16 +421,39 @@ class Ai4Seo_RobHubApiCommunicator {
     // =========================================================================================== \\
 
     /**
-     * Sanitize the given array or string.
-     * @param $array array|string The array or string to sanitize.
-     * @param $key
-     * @return void
+     * Return a fully sanitized array, using custom sanitize functions for both keys and values.
+     *
+     * @param array|string $data The array or value to be sanitized.
+     * @param string $sanitize_value_function_name The custom sanitize function for the values (default: sanitize_text_field).
+     * @param string $sanitize_key_function_name The custom sanitize function for the keys (default: sanitize_key).
+     * @return array|string The sanitized array or value.
      */
-    static function sanitize_array(&$array, $key) {
-        if (is_array($array)) {
-            $array[$key] = wp_kses_post($array[$key]);
+    function deep_sanitize($data, string $sanitize_value_function_name = 'sanitize_text_field', string $sanitize_key_function_name = 'sanitize_key') {
+        if (is_array($data)) {
+            $sanitized_data = array();
+            foreach ($data as $key => $value) {
+                // Sanitize the key using the key sanitize function
+                $sanitized_key = $sanitize_key_function_name($key);
+
+                // Recursively sanitize the value if it's an array, or sanitize the value using the value sanitize function
+                if (is_array($value)) {
+                    $sanitized_data[$sanitized_key] = ai4seo_deep_sanitize($value, $sanitize_value_function_name, $sanitize_key_function_name);
+                } else {
+                    if (is_bool($value)) {
+                        $sanitized_data[$sanitized_key] = $value;
+                    } else {
+                        $sanitized_data[$sanitized_key] = $sanitize_value_function_name($value);
+                    }
+                }
+            }
+            return $sanitized_data;
         } else {
-            $array = wp_kses_post($array);
+            if (is_bool($data)) {
+                return $data;
+            }
+
+            // If it's not an array, sanitize the value directly
+            return $sanitize_value_function_name($data);
         }
     }
 
@@ -445,7 +520,7 @@ class Ai4Seo_RobHubApiCommunicator {
      */
     function get_credits_balance(): int {
         // check _ai4seo_last_credit_balance_check option, if it's empty or older than 24 hours, call the robhub api to get the credits balance
-        $last_credits_balance_check_timestamp = get_option($this->last_credits_balance_check_option_name, 0);
+        $last_credits_balance_check_timestamp = (int) $this->read_environmental_variable(self::ENVIRONMENTAL_VARIABLE_LAST_CREDIT_BALANCE_CHECK);
 
         // if the last credit balance check is older than $creditsBalanceCacheLifetime hours,
         // call the robhub api to get the credits balance
@@ -453,7 +528,7 @@ class Ai4Seo_RobHubApiCommunicator {
             // if the option is empty, initialize the credentials and call the robhub api to get the credits balance
             // if it fails, return the current credits balance from the option
             if (!$this->init_credentials()) {
-                return (int) get_option($this->credits_balance_option_name);
+                return (int) $this->read_environmental_variable(self::ENVIRONMENTAL_VARIABLE_CREDITS_BALANCE);
             }
 
             // call robhub api to get the credits balance
@@ -461,13 +536,13 @@ class Ai4Seo_RobHubApiCommunicator {
             $credits_balance = (int) ($robhub_api_response["new-credits-balance"] ?? 0);
 
             // update the option _robhub_current_credits_balance
-            update_option($this->credits_balance_option_name, $credits_balance);
+            $this->update_environmental_variable(self::ENVIRONMENTAL_VARIABLE_CREDITS_BALANCE, $credits_balance);
 
-            // update the option _robhub_last_credit_balance_check
-            update_option($this->last_credits_balance_check_option_name, time());
+            // update
+            $this->update_environmental_variable(self::ENVIRONMENTAL_VARIABLE_LAST_CREDIT_BALANCE_CHECK, time());
         } else {
             // get the current credits balance from the option
-            $credits_balance = (int) get_option($this->credits_balance_option_name);
+            $credits_balance = (int) $this->read_environmental_variable(self::ENVIRONMENTAL_VARIABLE_CREDITS_BALANCE);
         }
 
         return $credits_balance;
@@ -479,34 +554,7 @@ class Ai4Seo_RobHubApiCommunicator {
      * Function to unset the last credit balance check option.
      */
     function reset_last_credit_balance_check(): void {
-        delete_option($this->last_credits_balance_check_option_name);
-    }
-
-    // =========================================================================================== \\
-
-    /**
-     * Function returns the users formatted time, based on the robhub server timestamp
-     */
-    function get_formatted_time($robhub_timestamp, $format = 'Y-m-d H:i') {
-        // Get the WordPress timezone
-        $timezone = get_option('timezone_string');
-
-        // If no valid timezone is set, default to UTC
-        if (!$timezone) {
-            return gmdate($format, $robhub_timestamp); // Use UTC format as fallback
-        }
-
-        // Create a DateTime object with the UTC timestamp
-        $datetime = new DateTime("@$robhub_timestamp"); // The @ symbol treats the timestamp as UNIX time
-
-        try {
-            $datetime->setTimezone(new DateTimeZone($timezone)); // Set to WordPress timezone
-        } catch (Exception $e) {
-            return gmdate($format, $robhub_timestamp); // Use UTC format as fallback
-        }
-
-        // Format and return the time in the desired format
-        return $datetime->format($format);
+        $this->update_environmental_variable(self::ENVIRONMENTAL_VARIABLE_LAST_CREDIT_BALANCE_CHECK, 0);
     }
 
     // =========================================================================================== \\
@@ -560,5 +608,153 @@ class Ai4Seo_RobHubApiCommunicator {
 
         // Format the result as HH:MM:SS
         return sprintf('%02d:%02d:%02d', $hours, $minutes, $remaining_seconds);
+    }
+
+
+    // ___________________________________________________________________________________________ \\
+    // === ROBHUB ENVIRONMENTAL VARIABLES ======================================================== \\
+    // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ \\
+
+    function set_environmental_variables_option_name(string $environmental_variables_option_name): void {
+        $this->environmental_variables_option_name = $environmental_variables_option_name;
+    }
+
+    // =========================================================================================== \\
+
+    /**
+     * Function to retrieve all robhub environmental variables
+     * @return array All RobHub environmental variables
+     */
+    function read_all_environmental_variables(): array {
+        if ($this->environmental_variables !== self::DEFAULT_ENVIRONMENTAL_VARIABLES) {
+            return $this->environmental_variables;
+        }
+
+        $current_environmental_variables = get_option($this->environmental_variables_option_name);
+        $current_environmental_variables = maybe_unserialize($current_environmental_variables);
+
+        // fallback to existing environmental variables
+        if (!is_array($current_environmental_variables)) {
+            return $this->environmental_variables;
+        }
+
+        // go through each environmental variable and check if it is valid
+        foreach ($current_environmental_variables as $environmental_variable_name => $environmental_variable_value) {
+            // if this environmental variable is not known, remove it
+            if (!isset(self::DEFAULT_ENVIRONMENTAL_VARIABLES[$environmental_variable_name])) {
+                unset($current_environmental_variables[$environmental_variable_name]);
+                continue;
+            }
+
+            if (!$this->validate_environmental_variable_value($environmental_variable_name, $environmental_variable_value)) {
+                error_log("ROBHUB: Invalid value for environmental variable '" . $environmental_variable_name . "'. #5415181024");
+                $current_environmental_variables[$environmental_variable_name] = self::DEFAULT_ENVIRONMENTAL_VARIABLES[$environmental_variable_name];
+            }
+        }
+
+        $this->environmental_variables = $current_environmental_variables;
+
+        return $current_environmental_variables;
+    }
+
+    // =========================================================================================== \\
+
+    /**
+     * Function to retrieve a specific robhub environmental variable
+     * @param string $environmental_variable_name The name of the robhub environmental variable
+     * @return mixed The value of the environmental variable
+     */
+    function read_environmental_variable(string $environmental_variable_name) {
+        // Make sure that $environmental_variable_name-parameter has content
+        if (!$environmental_variable_name) {
+            error_log("ROBHUB: Environmental variable name is empty. #3515181024");
+            return "";
+        }
+
+        $current_environmental_variables = $this->read_all_environmental_variables();
+
+        // Check if the $environmental_variable_name-parameter exists in environmental variables-array
+        if (!isset($current_environmental_variables[$environmental_variable_name])) {
+            // check for a default value
+            if (isset(self::DEFAULT_ENVIRONMENTAL_VARIABLES[$environmental_variable_name])) {
+                return self::DEFAULT_ENVIRONMENTAL_VARIABLES[$environmental_variable_name];
+            } else {
+                error_log("ROBHUB: Unknown environmental variable name: " . $environmental_variable_name . ". #3615181024");
+            }
+            return "";
+        }
+
+        return $current_environmental_variables[$environmental_variable_name];
+    }
+
+    // =========================================================================================== \\
+
+    /**
+     * Function to update a specific robhub environmental variable
+     * @param string $environmental_variable_name The name of the robhub environmental variable
+     * @param mixed $new_environmental_variable_value The new value of the robhub environmental variable
+     * @return bool True if the robhub environmental variable was updated successfully, false if not
+     */
+    function update_environmental_variable(string $environmental_variable_name, $new_environmental_variable_value): bool {
+        // Make sure that the new value of the environmental variable is valid
+        if (!$this->validate_environmental_variable_value($environmental_variable_name, $new_environmental_variable_value)) {
+            error_log("ROBHUB: Invalid value for environmental variable '" . $environmental_variable_name . "'. #3715181024");
+            return false;
+        }
+
+        // sanitize
+        $new_environmental_variable_value = $this->deep_sanitize($new_environmental_variable_value);
+
+        // overwrite entry in $current_environmental_variables-array
+        $current_environmental_variables = $this->read_all_environmental_variables();
+        $current_environmental_variables[$environmental_variable_name] = $new_environmental_variable_value;
+
+        // update the class parameter as well
+        $this->environmental_variables = $current_environmental_variables;
+
+        // Save updated environmental variables to database
+        return update_option($this->environmental_variables_option_name, $current_environmental_variables, true);
+    }
+
+    // =========================================================================================== \\
+
+    /**
+     * Validate value of an robhub environmental variable
+     * @param string $environmental_variable_name The name of the robhub environmental variable
+     * @param mixed $environmental_variable_value The value of the robhub environmental variable
+     */
+    function validate_environmental_variable_value(string $environmental_variable_name, $environmental_variable_value): bool {
+        switch ($environmental_variable_name) {
+            case self::ENVIRONMENTAL_VARIABLE_AUTH_DATA:
+                // array, contains of two elements, each of them contains only of alphanumeric characters
+                if (!is_array($environmental_variable_value)) {
+                    return false;
+                }
+
+                // empty array is allowed
+                if (count($environmental_variable_value) === 0) {
+                    return true;
+                }
+
+                if (count($environmental_variable_value) !== 2) {
+                    return false;
+                }
+
+                if (!preg_match("/^[a-z0-9_\-]{5,48}$/", $environmental_variable_value[0])) {
+                    return false;
+                }
+
+                if (!preg_match("/^[a-z0-9_\-]{48}$/", $environmental_variable_value[1])) {
+                    return false;
+                }
+
+                return true;
+            case self::ENVIRONMENTAL_VARIABLE_CREDITS_BALANCE:
+            case self::ENVIRONMENTAL_VARIABLE_LAST_CREDIT_BALANCE_CHECK:
+                // contains only of numbers
+                return is_numeric($environmental_variable_value) && $environmental_variable_value >= 0;
+            default:
+                return false;
+        }
     }
 }

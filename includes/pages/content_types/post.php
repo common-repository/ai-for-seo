@@ -101,11 +101,11 @@ $ai4seo_current_post_ids = array_map(function ($post) {
 $ai4seo_percentage_of_active_metadata_by_post_ids = ai4seo_read_percentage_of_active_metadata_by_post_ids($ai4seo_current_post_ids);
 
 // look for post ids that are scheduled by the cron jobs to process metadata
-$ai4seo_pending_metadata_post_ids = ai4seo_get_post_ids_from_option(AI4SEO_PENDING_METADATA_POST_IDS);
-$ai4seo_processing_metadata_post_ids = ai4seo_get_post_ids_from_option(AI4SEO_PROCESSING_METADATA_POST_IDS);
+$ai4seo_pending_metadata_post_ids = ai4seo_get_post_ids_from_option(AI4SEO_PENDING_METADATA_POST_IDS_OPTION_NAME);
+$ai4seo_processing_metadata_post_ids = ai4seo_get_post_ids_from_option(AI4SEO_PROCESSING_METADATA_POST_IDS_OPTION_NAME);
 
 // look for failed to fill post ids
-$ai4seo_all_failed_metadata_post_ids = ai4seo_get_post_ids_from_option(AI4SEO_FAILED_METADATA_POST_IDS);
+$ai4seo_all_failed_metadata_post_ids = ai4seo_get_post_ids_from_option(AI4SEO_FAILED_METADATA_POST_IDS_OPTION_NAME);
 
 // read all key phrases for all posts in $ai4seo_this_page_post_ids
 $ai4seo_third_party_seo_plugin_key_phrases = ai4seo_read_third_party_seo_plugin_key_phrases($ai4seo_current_post_ids);
@@ -120,7 +120,7 @@ $ai4seo_next_cron_job_call_diff = ($ai4seo_next_cron_job_call ? $ai4seo_next_cro
 $ai4seo_next_cron_job_call_diff_in_minutes = ceil($ai4seo_next_cron_job_call_diff / MINUTE_IN_SECONDS);
 
 // get the amount of failed posts for this post type
-$ai4seo_num_failed_to_fill_this_post_type = ai4seo_get_num_generation_status_and_post_types_posts(AI4SEO_FAILED_METADATA_POST_IDS, $ai4seo_post_type);
+$ai4seo_num_failed_to_fill_this_post_type = ai4seo_get_num_generation_status_and_post_types_posts(AI4SEO_FAILED_METADATA_POST_IDS_OPTION_NAME, $ai4seo_post_type);
 
 // remove entries from $ai4seo_failed_to_fill_post_ids that are not on this page
 $ai4seo_current_page_failed_to_fill_post_ids = array();
@@ -144,7 +144,7 @@ $ai4seo_all_failed_metadata_post_ids = $ai4seo_current_page_failed_to_fill_post_
 echo "<div class='ai4seo-automation-toggle-container'>";
     echo "<label for='ai4seo-toggle-automated-generation-checkbox'>";
         echo "<input type='checkbox' id='ai4seo-toggle-automated-generation-checkbox' onchange='ai4seo_toggle_automated_generation(\"" . esc_js($ai4seo_post_type) . "\", this.checked)' " . esc_attr($ai4seo_is_checked_phrase) . "/>";
-        printf(esc_html__("Fill missing metadata automatically (also when creating new %s).", "ai-for-seo"), esc_html($ai4seo_translated_post_type_plural));
+        printf(esc_html__("Activate bulk generation for %s (also when creating new entries).", "ai-for-seo"), esc_html($ai4seo_translated_post_type_plural));
         echo " ";
         printf(esc_html__("Approximate processing speed: %.1f %s/min.", "ai-for-seo"), esc_html(AI4SEO_APPROXIMATE_METADATA_GENERATION_SPEED), esc_html($ai4seo_translated_post_type_plural));
 
@@ -185,7 +185,6 @@ echo "<table class='widefat striped table-view-list pages ai4seo-posts-table'>";
         echo esc_html__("Metadata coverage", "ai-for-seo");
 
         // RESET ALL FAILED METADATA GENERATION
-        # todo: do ajax instead of reloading the page
         if (($ai4seo_num_failed_to_fill_this_post_type || $ai4seo_current_page_failed_to_fill_post_ids) && $ai4seo_is_automation_activated) {
             echo "<div class='ai4seo-table-title-button'>";
             echo ai4seo_wp_kses($ai4seo_retry_all_failed_metadata_generations_link_tag);
@@ -193,7 +192,7 @@ echo "<table class='widefat striped table-view-list pages ai4seo-posts-table'>";
         }
 
     echo "</th>";
-        echo "<th>" . esc_html__("Actions", "ai-for-seo") . "</th>";
+        echo "<th></th>";
     echo "</tr>";
 
     // Loop through all posts

@@ -164,23 +164,24 @@ h1.ai4seo-headline img {
     background-color: whitesmoke !important;
     color: #555 !important;
     border: 1px solid #ddd !important;
-    line-height: 0 !important;
+    line-height: 130% !important;
     position: relative !important;
     cursor: pointer !important;
     width: 150px !important;
     margin: 0 auto !important;
     border-radius: 100% !important;
     height: 150px !important;
-    padding-bottom: 30px !important;
     font-weight: bold !important;
     box-shadow: 3px 3px #888 !important;
     display: inline-block !important;
     box-sizing: border-box !important;
+    white-space: normal !important;
+    padding: 0 !important;
 }
 
 .ai4seo-generate-all-button-wrapper .ai4seo-generate-all-button img {
     display: block;
-    margin: 1em auto 1.2em auto;
+    margin: 2em auto 0.5em auto;
 }
 
 .ai4seo-generate-all-button-wrapper .ai4seo-generate-all-button .ai4seo-loading-animation {
@@ -365,7 +366,7 @@ h1.ai4seo-headline img {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #fff;
+    background: #ddd;
     animation-timing-function: cubic-bezier(0, 1, 1, 0);
 }
 
@@ -425,57 +426,6 @@ h1.ai4seo-headline img {
     float: right;
 }
 
-/* Code for custom modal */
-.ai4seo-notification-modal-wrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0,0,0,0.8);
-    z-index: 999999;
-    display: none;
-}
-
-.ai4seo-notification-modal {
-    padding: 1rem 1rem 6rem 1rem;
-    box-sizing: border-box;
-    text-align: center;
-    position: relative;
-    pointer-events: auto;
-    cursor: default;
-    font-size: larger;
-    background-color: white;
-    width: 30vw;
-    min-width: 300px;
-    height: auto;
-    margin: 10vh auto;
-    border: 3px solid #ccc;
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    border-radius: 5px;
-}
-
-.ai4seo-notification-modal-headline, .ai4seo-notification-modal-error-headline {
-    font-size: 1.5em;
-    margin-top: 0.5em;
-    display: none;
-}
-
-.ai4seo-notification-modal-content {
-    text-align: center;
-    padding: 1em;
-}
-
-div.ai4seo-notification-modal-buttons-row, div.ai4seo-notification-modal-default-buttons-row {
-    position: absolute;
-    width: 95%;
-    bottom: 1.4em;
-    font-size: larger;
-    display: none;
-    transform: scale(1.2);
-}
-
 progress.ai4seo-progress-success::-moz-progress-bar { background: #7AD03A; }
 
 progress.ai4seo-progress-success::-webkit-progress-value { background: #7AD03A; }
@@ -497,6 +447,10 @@ progress.ai4seo-progress-success { color: #7AD03A; }
 
 /* Modals */
 .ai4seo-ajax-modal-wrapper {
+    display: none;
+}
+
+.ai4seo-modal-wrapper {
     position: fixed;
     left: 0;
     top: 0;
@@ -504,10 +458,9 @@ progress.ai4seo-progress-success { color: #7AD03A; }
     height: 100vh;
     background-color: rgba(0,0,0,0.8);
     z-index: 99998;
-    display: none;
 }
 
-.ai4seo-ajax-modal {
+.ai4seo-modal {
     position: absolute;
     width: 50vw;
     max-height: calc(100vh - 6rem);
@@ -523,49 +476,56 @@ progress.ai4seo-progress-success { color: #7AD03A; }
     overflow: auto;
 }
 
-.ai4seo-ajax-modal h1 {
+.ai4seo-modal h1 {
     margin-top: 0!important;
     font-size: 1.6rem!important;
 }
 
-.ai4seo-ajax-modal h2 {
+.ai4seo-modal h1 img {
+    margin-bottom: -6px;
+    margin-right: 5px;
+    width: 32px;
+    height: 32px;
+}
+
+.ai4seo-modal h2 {
     font-size: 1.1rem!important;
     margin-top: 15px!important;
 }
 
-.ai4seo-ajax-modal h3 {
+.ai4seo-modal h3 {
     font-size: 1rem!important;
 }
 
-.ai4seo-ajax-modal h1, .ai4seo-ajax-modal h2, .ai4seo-ajax-modal h3 {
+.ai4seo-modal h1, .ai4seo-modal h2, .ai4seo-modal h3 {
     margin-bottom: 10px!important;
     font-weight: normal!important;
     line-height: 130% !important;
 }
 
-.ai4seo-ajax-modal h1, .ai4seo-ajax-modal h2, .ai4seo-ajax-modal h3, .ai4seo-ajax-modal p, .ai4seo-ajax-modal input, .ai4seo-ajax-modal textarea, .ai4seo-ajax-modal .ai4seo-generate-button, .ai4seo-ajax-modal .ai4seo-generate-all-button {
+.ai4seo-modal h1, .ai4seo-modal h2, .ai4seo-modal h3, .ai4seo-modal p, .ai4seo-modal input, .ai4seo-modal textarea, .ai4seo-modal .ai4seo-generate-button, .ai4seo-modal .ai4seo-generate-all-button {
     font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif!important;
     color: #333!important;
 }
 
-.ai4seo-ajax-modal .ai4seo-generate-all-button {
+.ai4seo-modal .ai4seo-generate-all-button {
     font-size: 0.8rem!important;
 }
 
-.ai4seo-ajax-modal .ai4seo-ajax-modal-close-icon {
+.ai4seo-modal .ai4seo-modal-close-icon {
     position: absolute;
     top: 1.5rem;
     right: 1.5rem;
     cursor: pointer;
 }
 
-.ai4seo-ajax-modal .ai4seo-ajax-modal-close-icon svg {
+.ai4seo-modal .ai4seo-modal-close-icon svg {
     width: 1.5rem;
     height: 1.5rem;
     fill: #808080;
 }
 
-.ai4seo-ajax-modal .ai4seo-ajax-modal-close-icon:hover svg {
+.ai4seo-modal .ai4seo-modal-close-icon:hover svg {
     fill: #303030;
 }
 
@@ -579,26 +539,83 @@ progress.ai4seo-progress-success { color: #7AD03A; }
     height: 3rem;
 }
 
-.ai4seo-ajax-modal-buttons {
+.ai4seo-modal-buttons {
     margin-top: 30px;
 }
 
-.ai4seo-ajax-modal-buttons .ai4seo-ajax-modal-left-button, .ai4seo-ajax-modal-buttons .ai4seo-ajax-modal-right-button {
+.ai4seo-modal-buttons .ai4seo-modal-left-button, .ai4seo-modal-buttons .ai4seo-modal-right-button {
     width: 50%;
     float: left;
     margin: 0;
 }
 
-.ai4seo-ajax-modal-buttons .ai4seo-ajax-modal-left-button button, .ai4seo-ajax-modal-buttons .ai4seo-ajax-modal-right-button button {
+.ai4seo-modal-buttons .ai4seo-modal-left-button button, .ai4seo-modal-buttons .ai4seo-modal-right-button button {
     width: 98%;
     margin: 0 auto;
 }
 
-.ai4seo-ajax-modal-buttons .ai4seo-clear{
+.ai4seo-modal-buttons .ai4seo-clear{
     clear: both;
     height: 0;
     font-size: 1px;
     line-height: 0;
+}
+
+/* Code for custom modal */
+.ai4seo-notification-modal-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.8);
+    z-index: 160001 !important;
+    display: none;
+}
+
+.ai4seo-notification-modal {
+    padding: 1rem 1rem 6rem 1rem;
+    box-sizing: border-box;
+    text-align: center;
+    position: relative;
+    pointer-events: auto;
+    cursor: default;
+    font-size: larger;
+    background-color: white;
+    max-width: 650px;
+    min-width: 300px;
+    height: auto;
+    margin: 10vh auto;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    left: auto;
+    top: auto;
+}
+
+.ai4seo-modal .ai4seo-notification-modal-headline, .ai4seo-modal  .ai4seo-notification-modal-error-headline {
+    font-size: 1.5em !important;
+    margin-top: 0.5em !important;
+}
+
+.ai4seo-notification-modal-content {
+    text-align: center;
+    padding: 1em;
+}
+
+div.ai4seo-notification-modal-buttons-row, div.ai4seo-notification-modal-default-buttons-row {
+    position: absolute;
+    width: 80%;
+    margin-left: 10%;
+    bottom: 1.5rem;
+    font-size: larger;
+    display: none;
+    transform: scale(1.19);
+    left: 0;
+}
+
+div.ai4seo-notification-modal-buttons-row .ai4seo-button, div.ai4seo-notification-modal-default-buttons-row .ai4seo-button {
+    margin: 10px;
 }
 
 .ai4seo-plugin-version-number {
@@ -822,6 +839,11 @@ progress.ai4seo-progress-success { color: #7AD03A; }
     }
 }
 
+.ai4seo-16x16-icon {
+    width: 16px !important;
+    height: 16px !important;
+}
+
 .ai4seo-24x24-icon {
     width: 24px !important;
     height: 24px !important;
@@ -849,6 +871,11 @@ progress.ai4seo-progress-success { color: #7AD03A; }
 .ai4seo-green-icon {
     /* svg color */
     fill: #00ff00;
+}
+
+.ai4seo-dark-green-icon {
+    /* svg color */
+    fill: #008800;
 }
 
 .ai4seo-blue-icon {
@@ -1247,7 +1274,7 @@ div.ai4seo-money-back-guarantee-notice > div.ai4seo-money-back-guarantee-signatu
 /* Media queries */
 @media screen and (max-width: 1350px) {
     /* AI4SEO Modal */
-    .ai4seo-ajax-modal {
+    .ai4seo-modal {
         width: 60vw;
         left: calc(50% - 30vw);
     }
@@ -1255,7 +1282,7 @@ div.ai4seo-money-back-guarantee-notice > div.ai4seo-money-back-guarantee-signatu
 
 @media screen and (max-width: 1100px) {
     /* AI4SEO Modal */
-    .ai4seo-ajax-modal {
+    .ai4seo-modal {
         width: 70vw;
         left: calc(50% - 35vw);
     }
@@ -1263,7 +1290,7 @@ div.ai4seo-money-back-guarantee-notice > div.ai4seo-money-back-guarantee-signatu
 
 @media screen and (max-width: 1000px) {
     /* AI4SEO Modal */
-    .ai4seo-ajax-modal {
+    .ai4seo-modal {
         width: 80vw;
         left: calc(50% - 40vw);
     }
@@ -1271,7 +1298,7 @@ div.ai4seo-money-back-guarantee-notice > div.ai4seo-money-back-guarantee-signatu
 
 @media screen and (max-width: 800px) {
     /* AI4SEO Modal */
-    .ai4seo-ajax-modal {
+    .ai4seo-modal {
         width: 90vw;
         left: calc(50% - 45vw);
     }
@@ -1294,7 +1321,7 @@ div.ai4seo-money-back-guarantee-notice > div.ai4seo-money-back-guarantee-signatu
 
 @media screen and (max-width: 650px) {
     /* AI4SEO Modal */
-    .ai4seo-ajax-modal {
+    .ai4seo-modal {
         width: 94%;
         left: calc(50% - 48%);
         padding: 1rem;
@@ -1336,7 +1363,7 @@ div.ai4seo-money-back-guarantee-notice > div.ai4seo-money-back-guarantee-signatu
     fill: #666666;
     width: 15px !important;
     height: 15px !important;
-    margin-top: -15px !important;
+    margin-top: -12px !important;
 }
 
 .ai4seo-tooltip {
@@ -1347,9 +1374,9 @@ div.ai4seo-money-back-guarantee-notice > div.ai4seo-money-back-guarantee-signatu
     transform: translateX(-50%);
     background-color: #333;
     color: #fff !important;
-    padding: 10px 15px;
+    padding: 20px;
     border-radius: 4px;
-    z-index: 1000;
+    z-index: 160002;
     margin-bottom: 10px;
     font-weight: normal !important;
     max-width: 500px;
@@ -1358,6 +1385,7 @@ div.ai4seo-money-back-guarantee-notice > div.ai4seo-money-back-guarantee-signatu
     line-height: 150%;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
     font-size: .8rem;
+    white-space: normal;
 }
 
 .ai4seo-tooltip::after {
@@ -1493,18 +1521,14 @@ div.ai4seo-money-back-guarantee-notice > div.ai4seo-money-back-guarantee-signatu
 }
 
 .ai4seo-form-item > label {
-    width: 300px;
     flex-shrink: 0;
-    margin-right: 40px;
+    margin-right: 15px;
     margin-bottom: 25px;
     font-size: larger;
     font-weight: normal;
     line-height: 150%;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-}
-
-.ai4seo-editor-form .ai4seo-form-item > label {
-    width: 200px;
+    width: 225px;
 }
 
 .ai4seo-form-item > label > .ai4seo-24x24-icon {
@@ -1694,4 +1718,69 @@ div.ai4seo-money-back-guarantee-notice > div.ai4seo-money-back-guarantee-signatu
     float: left;
     height: 30px;
     width: 28px;
+}
+
+/* === AI4SEO TOS =========================================================================== */
+
+@media (min-width: 1800px) {
+    .ai4seo-tos-modal {
+        max-width: 40vw;
+        left: calc(50% - 20vw);
+    }
+}
+
+@media (min-width: 2200px) {
+    .ai4seo-tos-modal {
+        max-width: 30vw;
+        left: calc(50% - 15vw);
+    }
+}
+
+.ai4seo-tos-modal .ai4seo-tos-box {
+    max-width: 500px;
+    max-height: calc(100vh - 450px);
+    overflow: auto;
+    text-align: left;
+    padding: 0 30px 10px 30px;
+    margin: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #eee;
+    font-family: Roboto, Open Sans, sans-serif;
+}
+
+.ai4seo-tos-modal .ai4seo-tos-checkboxes-wrapper {
+    max-width: 500px;
+    margin: 30px 20px 0 20px;
+    text-align: left;
+}
+
+.ai4seo-tos-checkbox {
+    margin-top: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px; /* Adjust the space between the checkbox and the label */
+}
+
+.ai4seo-tos-checkbox input {
+    margin-top: 1px; /* Optional: Align the checkbox vertically with the label text */
+}
+
+.ai4seo-tos-checkbox label {
+    flex: 1; /* Ensures the label text takes up the remaining space */
+}
+
+.ai4seo-tos-box h2 {
+    margin-top: 35px !important;
+    text-transform: uppercase;
+    font-family: Roboto, Open Sans, sans-serif !important;
+}
+
+.ai4seo-tos-box ol {
+    list-style-type: decimal;
+}
+
+.ai4seo-tos-box ol li::marker {
+    font-weight: bold;
+    color: #666;
 }

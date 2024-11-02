@@ -37,7 +37,7 @@ if (isset($_GET["ai4seo-execute-cron-job-sooner"]) && $_GET["ai4seo-execute-cron
 
 // check if the user wants to reset all failed metadata generation
 if (isset($_GET["ai4seo-reset-failed-attachment-attributes-generation"]) && $_GET["ai4seo-reset-failed-attachment-attributes-generation"]) {
-    update_option(AI4SEO_FAILED_ATTACHMENT_ATTRIBUTES_POST_IDS, json_encode(array()));
+    update_option(AI4SEO_FAILED_ATTACHMENT_ATTRIBUTES_POST_IDS_OPTION_NAME, json_encode(array()));
     ai4seo_refresh_all_posts_generation_status_summary();
 }
 
@@ -90,11 +90,11 @@ $ai4seo_next_cron_job_call_diff_in_minutes = ceil($ai4seo_next_cron_job_call_dif
 
 
 // look for attachment post ids that are scheduled by the cron jobs to process attributes
-$ai4seo_pending_attributes_attachment_post_ids = ai4seo_get_post_ids_from_option(AI4SEO_PENDING_ATTACHMENT_ATTRIBUTES_POST_IDS);
-$ai4seo_processing_attributes_attachment_post_ids = ai4seo_get_post_ids_from_option(AI4SEO_PROCESSING_ATTACHMENT_ATTRIBUTES_POST_IDS);
+$ai4seo_pending_attributes_attachment_post_ids = ai4seo_get_post_ids_from_option(AI4SEO_PENDING_ATTACHMENT_ATTRIBUTES_POST_IDS_OPTION_NAME);
+$ai4seo_processing_attributes_attachment_post_ids = ai4seo_get_post_ids_from_option(AI4SEO_PROCESSING_ATTACHMENT_ATTRIBUTES_POST_IDS_OPTION_NAME);
 
 // look for failed to fill post ids
-$ai4seo_failed_attributes_attachment_post_ids = ai4seo_get_post_ids_from_option(AI4SEO_FAILED_ATTACHMENT_ATTRIBUTES_POST_IDS);
+$ai4seo_failed_attributes_attachment_post_ids = ai4seo_get_post_ids_from_option(AI4SEO_FAILED_ATTACHMENT_ATTRIBUTES_POST_IDS_OPTION_NAME);
 
 // remove entries from $ai4seo_all_failed_to_fill_attributes_attachment_post_ids that are not on this page
 $ai4seo_current_page_failed_to_fill_attachment_post_ids = array();
@@ -138,7 +138,7 @@ $ai4seo_consider_purchasing_more_credits_link_tag = ai4seo_get_small_button_tag(
 echo "<div class='ai4seo-automation-toggle-container'>";
 echo "<label for='ai4seo-toggle-automated-generation-checkbox'>";
 echo "<input type='checkbox' id='ai4seo-toggle-automated-generation-checkbox' onchange='ai4seo_toggle_automated_generation(\"" . esc_js($ai4seo_post_type) . "\", this.checked)' " . esc_attr($ai4seo_is_checked_phrase) . "/>";
-printf(esc_html__("Fill missing media attributes automatically (also when creating new %s).", "ai-for-seo"), esc_html($ai4seo_media_label_plural));
+printf(esc_html__("Activate bulk generation for media attributes (also when uploading new media).", "ai-for-seo"), esc_html($ai4seo_media_label_plural));
 echo " ";
 printf(esc_html__("Approximate processing speed: %.1f %s/min.", "ai-for-seo"), esc_html(AI4SEO_APPROXIMATE_ATTACHMENT_ATTRIBUTES_GENERATION_SPEED), esc_html($ai4seo_media_label_plural));
 
@@ -169,7 +169,7 @@ echo "<table class='widefat striped table-view-list attachments ai4seo-posts-tab
         echo "<th>" . esc_html__("ID", "ai-for-seo") . "</th>";
         echo "<th></th>";
         echo "<th>" . esc_html__("Title", "ai-for-seo") . "</th>";
-        echo "<th>" . esc_html__("SEO Coverage", "ai-for-seo") . " <span style='font-size: smaller'>(" . esc_html__("Alt Text, Title, Caption, Description") . ")</span>";
+        echo "<th>" . esc_html__("SEO Coverage", "ai-for-seo") . " <span style='font-size: smaller'>(" . esc_html__("Alt Text, Title, Caption, Description", "ai-for-seo") . ")</span>";
 
         // RESET ALL FAILED ATTACHMENT ATTRIBUTES GENERATION
         # todo: do ajax instead of reloading the page
@@ -180,7 +180,7 @@ echo "<table class='widefat striped table-view-list attachments ai4seo-posts-tab
         }
 
         echo "</th>";
-        echo "<th>" . esc_html__("Actions", "ai-for-seo") . "</th>";
+        echo "<th></th>";
     echo "</tr>";
 
     // Loop through entries and display table-row for each entry
@@ -249,9 +249,9 @@ echo "<table class='widefat striped table-view-list attachments ai4seo-posts-tab
             echo "</td>";
 
             // Image or File Preview
-            echo "<td class='ai4seo-attachment-list-image-preview'>"; # todo: add css class
+            echo "<td class='ai4seo-attachment-list-image-preview'>";
                 echo "<a href='" . esc_url($ai4seo_this_post_link) . "' target='_blank'>";
-                echo "<img src='" . esc_url($ai4seo_preview_image_url) . "' alt='" . esc_html__("No image preview available") . "'/>";
+                echo "<img src='" . esc_url($ai4seo_preview_image_url) . "' alt='" . esc_html__("No image preview available", "ai-for-seo") . "'/>";
                 echo "</a>";
             echo "</td>";
 

@@ -1,5 +1,10 @@
 == Changelog ==
 
+= 1.2.6 =
+* Updated Terms of Service: Users must review and accept the new ToS to continue using the plugin.
+* Extended support for various payment methods, including Alipay, PayPal, Apple Pay, Google Pay, Giropay, iDEAL, SEPA, Direct Debit, WeChat Pay, Cartes Bancaires, MobilePay, Multibanko, BLIK, Bancontact, EPS, Przelewy24, SOFORT, TWINT and Klarna.
+* Fixed 21 minor bugs, and improved performance and security.
+
 = 1.2.5 =
 * Added a new setting with four meta tag output modes: "Disable 'AI for SEO' Meta Tags," "Force 'AI for SEO' Meta Tags," "Replace Existing Meta Tags," and "Complement Existing Meta Tags." The default mode, "Replace Existing Meta Tags," helps resolve compatibility issues with other plugins and may improve SEO performance by eliminating duplicate meta tags.
 * Added support for additional SEO plugins, including Blog2Social.

@@ -76,6 +76,7 @@ $ai4seo_current_subscription_next_credits_refresh_date_and_time = $ai4seo_curren
 $ai4seo_current_subscription_next_credits_refresh_timestamp = $ai4seo_current_subscription_next_credits_refresh_date_and_time
     ? strtotime($ai4seo_current_subscription_next_credits_refresh_date_and_time) : 0;
 $ai4seo_next_free_credits_timestamp = $ai4seo_current_subscription_data["next_free_credits"] ?? false;
+$ai4seo_last_website_toc_and_pp_update_time = (int) ($ai4seo_current_subscription_data["last_terms_update_time"] ?? false);
 
 // double check if subscription should be renewed
 $ai4seo_current_subscription_do_renew = !$ai4seo_user_is_on_free_plan
@@ -101,12 +102,12 @@ $ai4seo_credits_used_percentage = $ai4seo_current_subscription_plan_credits
 
 // check if we should show the licence key
 if (!$ai4seo_user_is_on_free_plan) {
-    // check for the option _ai4seo_licence_key_shown
-    $ai4seo_licence_key_shown = get_option("_ai4seo_licence_key_shown", false);
+    // check for the environmental variable to see if the licence key was already shown
+    $ai4seo_licence_key_shown = (bool) ai4seo_read_environmental_variable(AI4SEO_ENVIRONMENTAL_VARIABLE_LICENCE_KEY_SHOWN);
 
     if (!$ai4seo_licence_key_shown) {
         // set or create the option to true
-        update_option("_ai4seo_licence_key_shown", true);
+        ai4seo_update_environmental_variable(AI4SEO_ENVIRONMENTAL_VARIABLE_LICENCE_KEY_SHOWN, true);
         $ai4seo_client_secret = ai4seo_robhub_api()->get_client_secret();
         $ai4seo_congratulation_text = __("Congratulations on purchasing your subscription. Your license key will be displayed shortly. This key is an essential part of your subscription. Please keep it safe to continue using your subscription or reinstall the plugin if needed. Should you have any questions or require assistance, we are always here to help.", "ai-for-seo");
         $ai4seo_your_licence_key_text = __("Your license key", "ai-for-seo");
@@ -150,6 +151,23 @@ switch ($ai4seo_current_subscription_plan) {
 
 $ai4seo_purchase_plan_url = ai4seo_get_purchase_plan_url($ai4seo_client_id);
 
+// update the last website's ToC and PP update time if it is not set
+if ($ai4seo_last_website_toc_and_pp_update_time && $ai4seo_last_website_toc_and_pp_update_time != ai4seo_read_environmental_variable(AI4SEO_ENVIRONMENTAL_VARIABLE_LAST_WEBSITE_TOC_AND_PP_UPDATE_TIME)) {
+    ai4seo_update_environmental_variable(AI4SEO_ENVIRONMENTAL_VARIABLE_LAST_WEBSITE_TOC_AND_PP_UPDATE_TIME, $ai4seo_last_website_toc_and_pp_update_time);
+
+    // in addition, if the product terms update time is newer than the TOS accepted time, we reload the page, so the user
+    // sees the new terms of service
+    if ($ai4seo_last_website_toc_and_pp_update_time > ai4seo_read_environmental_variable(AI4SEO_ENVIRONMENTAL_VARIABLE_TOS_TOC_AND_PP_ACCEPTED_TIME)) {
+        // reload page in this event
+        echo "<script>";
+            echo "jQuery(document).ready(function() {";
+                echo "location.reload();";
+            echo "});";
+        echo "</script>";
+        return;
+    }
+}
+
 
 // ___________________________________________________________________________________________ \\
 // === JAVASCRIPT ============================================================================ \\
@@ -161,8 +179,8 @@ if ($ai4seo_user_is_on_free_plan) {
         const ai4seo_already_purchased_modal_headline = '<?=esc_js($ai4seo_already_purchased_modal_headline)?>';
         let ai4seo_already_purchased_modal_content = '<?=esc_js($ai4seo_already_purchased_modal_content_1)?>';
         ai4seo_already_purchased_modal_content += '<br><br><div style=\"text-align: center;\"><a onclick=\"location.reload();\" class=\"button ai4seo-button\"><?=esc_js(__("Try refresh page", "ai-for-seo"))?></a></div><br><br>';
-        ai4seo_already_purchased_modal_content += '<h2 class=\"ai4seo-notification-modal-headline\" style=\"display: block; text-align: center;\">- <?=esc_js(__("OR", "ai-for-seo"))?> -</h2><br>';
-        ai4seo_already_purchased_modal_content += '<h2 class=\"ai4seo-notification-modal-headline\" style=\"display: block; text-align: center;\"><?=esc_js(__("Reinstalled plugin?", "ai-for-seo"))?></h2><br>';
+        ai4seo_already_purchased_modal_content += '<h2 style=\"display: block; text-align: center;\">- <?=esc_js(__("OR", "ai-for-seo"))?> -</h2><br>';
+        ai4seo_already_purchased_modal_content += '<h2 style=\"display: block; text-align: center;\"><?=esc_js(__("Reinstalled plugin?", "ai-for-seo"))?></h2><br>';
         ai4seo_already_purchased_modal_content += '<?=esc_js($ai4seo_already_purchased_modal_content_2)?>';
         ai4seo_already_purchased_modal_content += '<br><br><input class=\"ai4seo-licence-key-input\" id=\"ai4seo-licence-key-input\" placeholder=\"<?=esc_attr__("Enter licence code here", "ai-for-seo")?>\">';
         let ai4seo_already_purchased_modal_button_row_html = '<a onclick=\"ai4seo_hide_notification_modal();\" class=\"button ai4seo-button ai4seo-abort-button\"><?=esc_js(__("Abort", "ai-for-seo"))?></a> ';
@@ -191,22 +209,22 @@ if (isset($_GET["ai4seo_debug_analyze_cronjob"]) && $_GET["ai4seo_debug_analyze_
 $ai4seo_error_notice = "";
 
 if (!$ai4seo_successfully_init_credentials) {
-    $ai4seo_error_notice = esc_html__("Failed to verify your credentials #1.", "ai-for-seo") . " ";
-} else if (!isset($ai4seo_client_subscription_response["success"]) || !$ai4seo_client_subscription_response["success"]) {
-    $ai4seo_error_notice = esc_html__("Failed to verify your credentials #2.", "ai-for-seo") . " ";
-} else if (!isset($ai4seo_client_subscription_response["data"]) || !$ai4seo_client_subscription_response["data"]) {
-    $ai4seo_error_notice = esc_html__("Failed to verify your credentials #3.", "ai-for-seo") . " ";
+    $ai4seo_error_notice = esc_html__("Failed to verify your credentials", "ai-for-seo") . " #1. ";
+} else if (isset($ai4seo_client_subscription_response) && !isset($ai4seo_client_subscription_response["success"]) || !$ai4seo_client_subscription_response["success"]) {
+    $ai4seo_error_notice = esc_html__("Failed to verify your credentials", "ai-for-seo") . " #2. ";
+} else if (isset($ai4seo_client_subscription_response) && !isset($ai4seo_client_subscription_response["data"]) || !$ai4seo_client_subscription_response["data"]) {
+    $ai4seo_error_notice = esc_html__("Failed to verify your credentials", "ai-for-seo") . " #3. ";
 } else if (!$ai4seo_current_subscription_plan) {
-    $ai4seo_error_notice = esc_html__("Failed to verify your credentials #4.", "ai-for-seo") . " ";
+    $ai4seo_error_notice = esc_html__("Failed to verify your credentials", "ai-for-seo") . " #4. ";
 }
 
 // check if we have an error notice -> add more information and then echo it
 if ($ai4seo_error_notice) {
-    if ($ai4seo_client_subscription_response["message"]) {
-        $ai4seo_error_notice .= esc_html($ai4seo_client_subscription_response["message"]) . " ";
+    if (isset($ai4seo_client_subscription_response) && $ai4seo_client_subscription_response["message"]) {
+        $ai4seo_error_notice .= "<strong>"  . esc_html($ai4seo_client_subscription_response["message"]) . "</strong> ";
     }
 
-    if ($ai4seo_client_subscription_response["code"]) {
+    if (isset($ai4seo_client_subscription_response) && $ai4seo_client_subscription_response["code"]) {
         $ai4seo_error_notice .= esc_html("(#" . $ai4seo_client_subscription_response["code"] . ").") . " ";
     }
 
@@ -279,7 +297,7 @@ foreach ($ai4seo_supported_post_types AS $ai4seo_supported_post_type) {
 
     // attachment -> media workaround
     if ($ai4seo_supported_post_type == "attachment") {
-        $ai4seo_supported_post_type = "media";
+        $ai4seo_supported_post_type = "media files";
     }
 
     $ai4seo_supported_post_type_label = ai4seo_get_post_type_translation($ai4seo_supported_post_type, true);
@@ -370,7 +388,12 @@ if ($ai4seo_current_subscription_next_credits_refresh_date_and_time && $ai4seo_c
     // subscription-end is more than one month in the future or we are going to renew the plan anyway (e.g. we are on a monthly renew frequency)
     if ($ai4seo_current_subscription_end_timestamp > strtotime("+1 month") || $ai4seo_current_subscription_do_renew) {
         // todo: translation could be done better with sprintf
-        echo "<span class='ai4seo-green-message'><strong>" . esc_html__("Renews on", "ai-for-seo") . " " . esc_html($ai4seo_current_subscription_next_credits_refresh_date_and_time) . ".</strong></span>";
+        echo "<span class='ai4seo-green-message'><strong>";
+        echo ai4seo_wp_kses(sprintf(
+            __("Renews on %s.", "ai-for-seo"),
+            esc_html($ai4seo_current_subscription_next_credits_refresh_date_and_time),
+        ));
+        echo "</strong></span>";
     } else {
         echo "<span class='ai4seo-red-message'><strong>" . esc_html($ai4seo_no_more_renewals_message) . "</strong></span>";
     }
@@ -416,13 +439,19 @@ echo "<div class='card ai4seo-card'>";
         echo ai4seo_get_button_text_link_tag($ai4seo_purchase_plan_url, "circle-up", __("Upgrade", "ai-for-seo"), "ai4seo-success-button");
 
         // already purchased? button
-        echo ai4seo_get_button_text_link_tag("#", "bolt", __("Already purchased?", "ai-for-seo"), "", "ai4seo_show_notification_modal(ai4seo_already_purchased_modal_content, ai4seo_already_purchased_modal_headline, ai4seo_already_purchased_modal_button_row_html)");
+        echo ai4seo_get_button_text_link_tag("#", "bolt", __("Already purchased?", "ai-for-seo"), "", "console.log(ai4seo_already_purchased_modal_content);ai4seo_show_notification_modal(ai4seo_already_purchased_modal_content, ai4seo_already_purchased_modal_headline, ai4seo_already_purchased_modal_button_row_html)");
         echo "</div>";
     } else {
         // PAID PLAN
         // infos about renewing the plan
         if ($ai4seo_current_subscription_do_renew) {
-            echo "<p>" . esc_html__("Renews on", "ai-for-seo") . ": " . esc_html($ai4seo_current_subscription_end_date) . " (" . esc_html($ai4seo_current_subscription_renew_frequency) . ")</p>";
+            echo "<p>";
+                echo ai4seo_wp_kses(sprintf(
+                    __("Renews on: %s (%s).", "ai-for-seo"),
+                    esc_html($ai4seo_current_subscription_end_date),
+                    esc_html($ai4seo_current_subscription_renew_frequency),
+                ));
+            echo "</p>";
         } else {
             // Check if subscription-end is in the past (should never be the case, as the user will fall back to the free plan)
             if ($ai4seo_current_subscription_end_timestamp < time()) {
@@ -461,10 +490,10 @@ echo "<div class='card ai4seo-card'>";
     // WordPress help icon
     echo ai4seo_wp_kses(ai4seo_get_svg_tag("circle-question", __("Help", "ai-for-seo"), "ai4seo-big-paragraph-icon")) . " ";
 
-    # todo: change link to go to help > contact section instead
-    echo sprintf(
+    echo ai4seo_wp_kses(sprintf(
         /* translators: %s is a clickable email address */
-        esc_html__("Missing a feature, need assistance, or looking for a quote? Please reach out to us at %s. We're always here to help.", "ai-for-seo"),
-        '<a href="mailto:' . esc_attr(AI4SEO_SUPPORT_EMAIL) . '">' . esc_html(AI4SEO_SUPPORT_EMAIL) . '</a>'
-    );
+        __("Missing a feature, need assistance, or looking for a quote?", "ai-for-seo") . "<br>" .
+        __("Please <a href='%s' target='blank'>contact us</a>.", "ai-for-seo"),
+        esc_attr(AI4SEO_OFFICIAL_CONTACT_URL)
+    ));
 echo "</div>";

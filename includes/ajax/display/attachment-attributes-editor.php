@@ -137,14 +137,14 @@ echo "<div class='ai4seo-form ai4seo-editor-form'>";
     echo "<input type='hidden' id='ai4seo-editor-modal-post-id' value='" . esc_attr($ai4seo_this_attachment_post_id) . "' />";
 
     // Buttons
-    echo "<div class='ai4seo-ajax-modal-buttons'>";
+    echo "<div class='ai4seo-modal-buttons'>";
         // Left button
-        echo "<div id='ai4seo-ajax-modal-left-button' class='ai4seo-ajax-modal-left-button'>";
+        echo "<div id='ai4seo-modal-left-button' class='ai4seo-modal-left-button'>";
             echo "<button type='button' onclick='ai4seo_hide_ajax_modal();' class='button ai4seo-button ai4seo-abort-button'>" . esc_html__("Abort", "ai-for-seo") . "</button>";
         echo "</div>";
 
         // Right button
-        echo "<div id='ai4seo-ajax-modal-right-button' class='ai4seo-ajax-modal-right-button'>";
+        echo "<div id='ai4seo-modal-right-button' class='ai4seo-modal-right-button'>";
             echo "<button type='button' onclick='ai4seo_submit_ajax_modal(\"ai4seo_save_attachment_attributes_editor_values\");' class='button ai4seo-button ai4seo-success-button' id='ai4seo-modal-submit' disabled='disabled'>" . esc_html__("Submit", "ai-for-seo") . "</button>";
         echo "</div>";
 

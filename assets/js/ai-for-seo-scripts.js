@@ -95,7 +95,9 @@ var ai4seo_error_codes_and_messages = {
     "1115424": wp.i18n.__("Your AI for SEO account does not contain sufficient credits. Please add credits to your account.", "ai-for-seo") + "<br /><br /><a href='/wp-admin/admin.php?page=ai-for-seo' target='_blank'>" + wp.i18n.__("Click here to add credits", "ai-for-seo") + "</a>",
 };
 
-var ai4seo_32127323_or_18197323_error_codes_and_messages = {
+var ai4seo_robhub_api_response_error_codes = [32127323, 18197323, 311823824];
+
+var ai4seo_robhub_api_response_error_codes_and_messages = {
     "client secret is invalid. Api-Error-Code: 351816823": wp.i18n.__("Could not initialize AI for SEO server credentials. Please check your settings or contact the plugin developer.", "ai-for-seo"),
     "client is not active. Api-Error-Code: 361816823": wp.i18n.__("Could not initialize AI for SEO server credentials. Please check your settings or contact the plugin developer.", "ai-for-seo"),
     "could not create client. Api-Error-Code: 571931823": wp.i18n.__("Could not initialize AI for SEO server credentials. Please check your settings or contact the plugin developer.", "ai-for-seo"),
@@ -105,6 +107,8 @@ var ai4seo_32127323_or_18197323_error_codes_and_messages = {
     "Too Many Requests. Api-Error-Code: 381816823": wp.i18n.__("Maximum number of requests reached. Please try again later.", "ai-for-seo"),
     "Too Many Requests. Api-Error-Code: 591931823": wp.i18n.__("Maximum number of requests reached. Please try again later.", "ai-for-seo"),
     "input parameter is too short": wp.i18n.__("The provided content length insufficient for optimal SEO performance.", "ai-for-seo"),
+    "We detected inappropriate content": wp.i18n.__("The provided post or media file contains inappropriate content. Please adjust your content and try again.", "ai-for-seo"),
+    "client blocked from using this service": wp.i18n.__("Your AI for SEO account has been blocked from using this service due to suspicious activity. Please contact the plugin developer if you believe this is an error.", "ai-for-seo"),
 };
 
 var ai4seo_context = ai4seo_get_context();
@@ -143,7 +147,8 @@ var ai4seo_attachment_mime_type_selectors = [".media-frame-content .attachment-i
 let ai4seo_allowed_ajax_actions = [
     "ai4seo_show_metadata_editor", "ai4seo_show_attachment_attributes_editor",
     "ai4seo_generate_metadata", "ai4seo_generate_attachment_attributes",
-    "ai4seo_save_metadata_editor_values", "ai4seo_save_attachment_attributes_editor_values"
+    "ai4seo_save_metadata_editor_values", "ai4seo_save_attachment_attributes_editor_values",
+    "ai4seo_decline_tos", "ai4seo_accept_tos", "ai4seo_show_terms_of_service"
 ];
 
 
@@ -325,12 +330,6 @@ function ai4seo_load_localization() {
 // =========================================================================================== \\
 
 function ai4seo_init_html_elements() {
-    // Init 'Generate with AI' buttons
-    ai4seo_init_generate_buttons();
-
-    // Add 'Generate all with AI' buttons
-    ai4seo_init_generate_all_button();
-
     // Add tooltip functionality
     ai4seo_init_tooltips();
 
@@ -340,6 +339,20 @@ function ai4seo_init_html_elements() {
     // Add select all / unselect all checkbox functionality
     ai4seo_init_select_all_checkboxes();
 
+    // init modals
+    ai4seo_init_modals();
+
+    if (ai4seo_does_user_need_to_accept_tos_toc_and_pp()) {
+        // stop script if user needs to accept TOS, TOC and PP
+        return;
+    }
+
+    // Init 'Generate with AI' buttons
+    ai4seo_init_generate_buttons();
+
+    // Add 'Generate all with AI' buttons
+    ai4seo_init_generate_all_button();
+
     // Add open-layer-button to edit-page-header
     ai4seo_add_open_edit_metadata_modal_button_to_edit_page_header();
 
@@ -348,9 +361,6 @@ function ai4seo_init_html_elements() {
 
     // Add open-layer-button to elementor-navigation
     ai4seo_add_open_edit_metadata_modal_button_to_elementor_navigation();
-
-    // init modals
-    ai4seo_init_modals();
 }
 
 // =========================================================================================== \\
@@ -1173,10 +1183,10 @@ function ai4seo_check_response( response, error_list = {}, show_generic_error = 
     // otherwise we have an error
     console.log(response);
 
-    // Check if error-code is 32127323 -> handle it as a special case
-    if (response.code === 32127323 || response.code === "32127323" || response.code === 18197323 || response.code === "18197323") {
+    // Check if response.code (cast to int) is in ai4seo_robhub_api_response_error_codes
+    if (ai4seo_robhub_api_response_error_codes.includes(parseInt(response.code))) {
         // Handle error-code 32127323 or 18197323
-        ai4seo_handle_32127323_or_18197323_errors(response.error, response.code);
+        ai4seo_handle_robhub_api_response_errors(response.error, response.code);
     }
 
     // check for the "content too short" error
@@ -1202,18 +1212,18 @@ function ai4seo_check_response( response, error_list = {}, show_generic_error = 
 
 // =========================================================================================== \\
 
-function ai4seo_handle_32127323_or_18197323_errors(error_message, error_code) {
-    // Check if ai4seo_32127323_or_18197323_error_codes_and_messages-array contains key that contains the error-message
-    for (var key in ai4seo_32127323_or_18197323_error_codes_and_messages) {
+function ai4seo_handle_robhub_api_response_errors(error_message, error_code) {
+    // Check if ai4seo_robhub_api_response_error_codes_and_messages-array contains key that contains the error-message
+    for (var key in ai4seo_robhub_api_response_error_codes_and_messages) {
         if (error_message.includes(key)) {
             // Display error-message
-            ai4seo_show_notification_modal(ai4seo_32127323_or_18197323_error_codes_and_messages[key]);
+            ai4seo_show_notification_modal(ai4seo_robhub_api_response_error_codes_and_messages[key]);
             return;
         }
     }
 
     // Display generic error-message if no error-message was found
-    ai4seo_show_notification_modal(wp.i18n.__("An error occurred. Please contact the plugin-developer or try again!", "ai-for-seo") + " (" + wp.i18n.__("Error-code", "ai-for-seo") + ": #" + error_code + ", " + error_message + ")");
+    ai4seo_show_notification_modal(error_message + " (" + wp.i18n.__("API error-code", "ai-for-seo") + ": #" + error_code + "). " + wp.i18n.__("An error occurred. Please contact the plugin-developer or try again!", "ai-for-seo"));
 }
 
 // =========================================================================================== \\
@@ -1568,13 +1578,18 @@ function ai4seo_add_link_element_to_yoast_seo_input_label(editor_element_selecto
 
 // =========================================================================================== \\
 
-function ai4seo_get_generate_button_output(element_selector, button_label = "Generate with AI", button_title = "") {
+function ai4seo_get_generate_button_output(element_selector, button_label = "auto", button_title = "") {
     // Make sure that onclick-variable is defined
     let button_onclick = "";
     let try_read_page_content_via_js = "true"; // assuming I'm inside a WordPress editor
 
     if (ai4seo_exists("#ai4seo-read-page-content-via-js")) {
         try_read_page_content_via_js = ai4seo_jQuery("#ai4seo-read-page-content-via-js").val();
+    }
+
+    if (button_label === "auto") {
+        // Generate with AI
+        button_label = wp.i18n.__("Generate with AI", "ai-for-seo");
     }
 
     // Check if processing-entry exists in mapping-array
@@ -1760,17 +1775,31 @@ function ai4seo_show_notification_modal(message, headline = "", buttons_row_html
 // =========================================================================================== \\
 
 function ai4seo_hide_notification_modal() {
-    jQuery(".ai4seo-notification-modal-wrapper", window.parent.document).hide();
-    jQuery(".ai4seo-notification-modal-wrapper", window.parent.document).find(".ai4seo-notification-modal").hide();
-    jQuery(".ai4seo-notification-modal-wrapper", window.parent.document).find(".ai4seo-notification-modal-content").html("");
+    let notification_modal_wrapper = jQuery(".ai4seo-notification-modal-wrapper", window.parent.document);
+
+    notification_modal_wrapper.hide();
+    notification_modal_wrapper.find(".ai4seo-notification-modal").hide();
+    notification_modal_wrapper.find(".ai4seo-notification-modal-content").html("");
 }
 
 // =========================================================================================== \\
 
 function ai4seo_hide_ajax_modal() {
-    jQuery("#ai4seo-ajax-modal-wrapper", window.parent.document).hide();
-    jQuery("#ai4seo-ajax-modal-wrapper", window.parent.document).find(".ai4seo-ajax-modal").hide();
-    jQuery("#ai4seo-ajax-modal-wrapper", window.parent.document).find(".ai4seo-ajax-modal-content").html("")
+    let ajax_modal_wrapper = jQuery("#ai4seo-ajax-modal-wrapper", window.parent.document);
+    ajax_modal_wrapper.hide();
+    ajax_modal_wrapper.find(".ai4seo-ajax-modal").hide();
+    ajax_modal_wrapper.find(".ai4seo-ajax-modal-content").html("")
+}
+
+// =========================================================================================== \\
+
+function ai4seo_hide_modal(element_within_modal) {
+    element_within_modal = ai4seo_jQuery(element_within_modal);
+
+    // find ai4seo-modal-wrapper parent
+    let modal_wrapper = element_within_modal.closest(".ai4seo-modal-wrapper", window.parent.document);
+
+    modal_wrapper.hide();
 }
 
 // =========================================================================================== \\
@@ -2245,3 +2274,90 @@ jQuery(document).on("click", ".ai4seo-performance-notice > .notice-dismiss", fun
         ai4seo_check_response(response);
     });
 });
+
+
+// ___________________________________________________________________________________________ \\
+// === TERMS OF SERVICE ====================================================================== \\
+// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ \\
+
+/**
+ * Toggle the terms of service accept button based on the agreement checkbox state
+ */
+function ai4seo_toggle_tos_accept_button() {
+    let accept_button = ai4seo_jQuery("#ai4seo-accept-tos-button");
+
+    if (accept_button.length) {
+        accept_button.prop("disabled", !accept_button.prop("disabled"));
+    }
+}
+
+// =========================================================================================== \\
+
+/**
+ * Show confirmation notification modal to really decline tos
+ */
+function ai4seo_confirm_to_decline_tos() {
+    let headline = wp.i18n.__("Please confirm", "ai-for-seo");
+    let content = wp.i18n.__("Are you sure you want to decline the terms of service and uninstall AI for SEO?", "ai-for-seo");
+    content += "<br><br>";
+    content += wp.i18n.__("<strong>Attention:</strong><br>If you have already purchased a plan, you can cancel it by clicking <a href='https://aiforseo.ai/cancel-plan' target='_blank'>HERE</a>.", "ai-for-seo");
+    let decline_button = "<button type='button' class='ai4seo-button ai4seo-abort-button' id='ai4seo-decline-tos-button' onclick='ai4seo_decline_tos();'>" + wp.i18n.__("Yes, please!", "ai-for-seo") + "</button>";
+    let back_button = "<button type='button' class='ai4seo-button ai4seo-success-button' onclick='ai4seo_hide_notification_modal();'>" + wp.i18n.__("No, I changed my mind", "ai-for-seo") + "</button>";
+
+    ai4seo_show_notification_modal(content, headline, decline_button + back_button);
+}
+
+// =========================================================================================== \\
+
+/**
+ * Let the user decline tos, using ajax
+ */
+function ai4seo_decline_tos() {
+    // Prepare data for ajax call
+    var data = {
+        action: "ai4seo_decline_tos",
+    };
+
+    // Make the ajax call and await the json response
+    jQuery.post( ai4seo_admin_ajax_url, data, function( response ) {
+        ai4seo_check_response(response)
+
+        // reload page
+        window.location.reload();
+    });
+
+    ai4seo_add_loading_html_to_element(".ai4seo-button");
+}
+
+// =========================================================================================== \\
+
+/**
+ * Let the user accept tos, using ajax
+ */
+function ai4seo_accept_tos() {
+    // check state of checkbox "ai4seo-enhanced-reporting-checkbox"
+    let accepted_enhanced_reporting = ai4seo_jQuery("#ai4seo-enhanced-reporting-checkbox").prop("checked");
+
+    // Prepare data for ajax call
+    var data = {
+        accepted_enhanced_reporting: accepted_enhanced_reporting,
+        action: "ai4seo_accept_tos",
+    };
+
+    // Make the ajax call and await the json response
+    jQuery.post( ai4seo_admin_ajax_url, data, function( response ) {
+        ai4seo_check_response(response)
+
+        // reload page
+        window.location.reload();
+    });
+
+    ai4seo_add_loading_html_to_element(".ai4seo-button");
+}
+
+// =========================================================================================== \\
+
+function ai4seo_does_user_need_to_accept_tos_toc_and_pp() {
+    // check for element "ai4seo-user-accepted-tos"
+    return !ai4seo_exists("#ai4seo-user-accepted-tos");
+}

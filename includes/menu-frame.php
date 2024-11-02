@@ -65,6 +65,20 @@ echo "<div class='wrap'>";
 
     flush();
 
+    // === CHECK FOR NEW TOS ===================================================================== \\
+
+    // set parameter to false, so we definitely don't output anything, if tos was not accepted
+    if (ai4seo_does_user_need_to_accept_tos_toc_and_pp()) {
+        // show message to accept tos and offer a reload button
+        echo "<center>";
+            echo "<div class='ai4seo-tos-notice'>";
+                echo "<p>" . esc_html__("Please accept our Terms of Service to proceed with using this plugin.", "ai-for-seo") . "</p>";
+                echo "<a href='" . esc_url(ai4seo_get_admin_url()) . "' class='button ai4seo-button ai4seo-success-button'>" . esc_html__("Show terms of service", "ai-for-seo") . "</a>";
+            echo "</div>";
+        echo "</div>";
+        return;
+    }
+
     echo "<nav class='nav-tab-wrapper ai4seo-nav-tab-wrapper'>";
         // Dashboard tab
         echo "<a href='" . esc_url($ai4seo_dashboard_url) . "' class='nav-tab ai4seo-nav-tab" . ($ai4seo_is_dashboard_url ? " nav-tab-active ai4seo-nav-tab-active" : "") . "'>";

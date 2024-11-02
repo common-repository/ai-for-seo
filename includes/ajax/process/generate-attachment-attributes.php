@@ -251,7 +251,7 @@ if (!isset($ai4seo_results["success"])) {
 }
 
 if ($ai4seo_results["success"] === false) {
-    ai4seo_return_error_as_json("API call returned an error: #" . $ai4seo_results["code"] . ": "  . $ai4seo_results["message"], 311823824);
+    ai4seo_return_error_as_json($ai4seo_results["message"] . " (Error-code: #" . $ai4seo_results["code"] . ")", 311823824);
 }
 
 if ($ai4seo_results["success"] !== true && $ai4seo_results["success"] !== "true") {
